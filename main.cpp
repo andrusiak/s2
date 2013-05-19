@@ -14,14 +14,28 @@ using namespace std;
 #include <string.h>
 #include <math.h>
 
-#define NMAX 100000
+#define NMAX 10000
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
+struct AutocorrFunction{
+	float* t;
+	float* C1;
+	long frames_number;
+};
 
 void printACF(float * t, float * C1, int n){
     for(int i = 0; i<n; i++){
      printf("time = %5.1f , C1 = %f\n", *(t+i),*(C1+i));
     }
+}
+
+void calcSimpleApproad(AutocorrFunction* acf, float& s2, float& tau_s){
+
+}
+
+void calcExtendedApproad(float* t, float* C1, float& s2, float& sf2, float& tau_f, float& tau_s){
+
 }
 
 float processACF(float * t, float * C1, int n){
@@ -30,12 +44,12 @@ float processACF(float * t, float * C1, int n){
     int kpr = 4;
     for(int i = 0; i<n; i++){
         if(C1[i]<1/exp(1)){
-            t_e = t[i]; it_e=i;
+            t_e =(int)t[i]; it_e=i;
    //         printf("t_e =%d ", t_e);
             break;
         }
     }
-    if(it_e== -1){ it_e = n-1; t_e=t[it_e];}
+    if(it_e== -1){ it_e = n-1; t_e=(int)t[it_e];}
 
     int itmax = MIN(kpr * it_e, n-1);
     A0 = C1[itmax];
@@ -57,10 +71,10 @@ int main(void) {
         char line[100];
         float time_, C1_;
         int numValuesRead;
-        float t[NMAX];
+        float t [NMAX];
         float C1[NMAX];
         float s2;
-        int i = 0, nFrames, nResidue = 0;
+        long i = 0, nFrames, nResidue = 0;
         FILE *output = fopen(s2File, "w");
         fprintf(output,"%s", header);
 
@@ -74,6 +88,9 @@ int main(void) {
                     i = 0;
                     // printACF(t, C1, nFrames);
                     s2 = processACF(t, C1, nFrames);
+                    AutocorrFunction acf = {t1, c2, nFrames};
+                    float tau_s;
+                    calcSimpleApproad(&acf, s2, tau_s);
                     ++nResidue;
                     fprintf(output,"%d \t%f \n", nResidue, s2);
                   //  exit(1);
@@ -85,6 +102,7 @@ int main(void) {
         fclose(output);
     } else {
         perror(acfFile); /* why didn't the file open? */
+        return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
 }
