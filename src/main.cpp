@@ -74,7 +74,7 @@ SimpleModelState calcSimpleApproad(AutocorrFunction* acf, SimpleModelState* init
 	float eps = 0.0001;
 //	float s2i = 0.5, s2next = s2i + 10 * eps;
 //	float tau_s = 50.0;
-	SimpleModelState currentValue = *initialValue;
+	struct SimpleModelState currentValue = *initialValue;
 	do {
 		*initialValue = currentValue;
 
@@ -121,8 +121,8 @@ int main(void) {
         char line[100];
         float time_, C1_;
         int numValuesRead;
-        float t [NMAX];
-        float C1[NMAX];
+		float* t = (float*) malloc(NMAX * sizeof(float));
+		float* C1= (float*) malloc(NMAX * sizeof(float));
         float s2;
         long i = 0, nFrames, nResidue = 0;
         FILE *output = fopen(s2File, "w");
@@ -139,18 +139,18 @@ int main(void) {
                     // printACF(t, C1, nFrames);
                     s2 = processACF(t, C1, nFrames);
 
-                    AutocorrFunction acf;
-                    acf.t=t;
+                    struct AutocorrFunction acf;
+					acf.t = t;
                     acf.C1 = C1;
                     acf.frames_number = nFrames;
 
-                    SimpleModelState* state;
-					state->s2 = 0.5;
-					state->tau_s = 50;
-                    calcSimpleApproad(&acf, state);
+                    struct SimpleModelState state;
+					state.s2 = 0.5;
+					state.tau_s = 50;
+                    calcSimpleApproad(&acf, &state);
 
                     ++nResidue;
-                    fprintf(output,"%d \t%f \t%f \n", nResidue, state->s2, state->tau_s);
+                    fprintf(output,"%lu \t%f \t%f \n", nResidue, state.s2, state.tau_s);
                   //  exit(1);
                 }else{
                     t[i] = time_; C1[i] = C1_; i++;
